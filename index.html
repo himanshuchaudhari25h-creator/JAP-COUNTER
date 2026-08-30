@@ -56,11 +56,6 @@
       height: 100%;
     }
 
-    header {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-
     header h1 {
       font-size: 2.2rem;
       font-weight: 800;
@@ -68,16 +63,7 @@
       text-transform: uppercase;
       color: #7a2021;
       text-shadow: 0 2px 4px rgba(255, 255, 255, 0.4);
-      line-height: 1.1;
-    }
-
-    header .marathi-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #b71c1c;
-      letter-spacing: 0.05em;
-      margin-top: 4px;
-      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+      margin-bottom: 2rem;
     }
 
     /* Layout with Right-side Total Panel */
@@ -301,7 +287,6 @@
 
   <header>
     <h1>Jap Counter</h1>
-    <div class="marathi-title">जाप काउंटर</div>
   </header>
 
   <div class="app-container">
@@ -435,39 +420,36 @@
       }
     });
 
-    /* Zero-Delay Instant Speech Recognition */
+    /* Voice Recognition Setup for Mantra */
     let isListening = false;
-    let lastMatchTime = 0;
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
-      recognition.interimResults = true; // Provides instant real-time feedback
-      recognition.lang = 'hi-IN';
+      recognition.interimResults = true;
+      recognition.lang = 'hi-IN'; // Hindi/Sanskrit phonetic tuning
 
       recognition.onresult = (event) => {
-        const now = Date.now();
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          const transcript = event.results[i][0].transcript.toLowerCase();
+        const lastIndex = event.results.length - 1;
+        const transcript = event.results[lastIndex][0].transcript.toLowerCase().trim();
 
-          const matched = transcript.includes('janardhana') || 
-                          transcript.includes('janardhanay') || 
-                          transcript.includes('जनार्दनाय') || 
-                          transcript.includes('जनार्दन');
+        // Triggers for "Om Shri Janardhanay Namaha" variations (English & Hindi script)
+        const matched = transcript.includes('janardhana') || 
+                        transcript.includes('janardhanay') || 
+                        transcript.includes('जनार्दनाय') || 
+                        transcript.includes('जनार्दन');
 
-          // Trigger immediately on interim result with a 650ms debounce
-          if (matched && (now - lastMatchTime > 650)) {
-            lastMatchTime = now;
+        if (matched) {
+          if (event.results[lastIndex].isFinal) {
             updateCounter(count + 1);
-            break;
           }
         }
       };
 
       recognition.onend = () => {
         if (isListening) {
-          recognition.start();
+          recognition.start(); // Keep listening automatically
         } else {
           btnMic.classList.remove('active');
           voiceStatus.textContent = "Voice mode off";
@@ -508,3 +490,4 @@
 
 </body>
 </html>
+
