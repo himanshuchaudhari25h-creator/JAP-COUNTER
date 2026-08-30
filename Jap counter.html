@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jap Counter</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 50%, #ff9a9e 100%);
+      color: #333333;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem 1rem;
+      position: relative;
+    }
+
+    /* Top Left Corner Branding */
+    .top-left-brand {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #b71c1c;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+    }
+
+    /* Top Right Corner Golden Om Logo */
+    .top-right-logo {
+      position: absolute;
+      top: 18px;
+      right: 24px;
+      width: 55px;
+      height: 55px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 2px 5px rgba(183, 28, 28, 0.3));
+    }
+
+    .top-right-logo svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #7a2021;
+      text-shadow: 0 2px 4px rgba(255, 255, 255, 0.4);
+      margin-bottom: 2rem;
+    }
+
+    /* Layout with Right-side Total Panel */
+    .app-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3rem;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .counter-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    /* Extra-Large Counter Display */
+    #count-display {
+      font-size: 11rem;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1;
+      text-shadow: 0 10px 25px rgba(184, 55, 39, 0.25);
+      transition: transform 0.05s ease, color 0.3s ease;
+      margin-bottom: 0.5rem;
+    }
+
+    #count-display.pulse {
+      transform: scale(1.06);
+    }
+
+    /* Voice Status Indicator */
+    .voice-status {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #b71c1c;
+      margin-bottom: 1rem;
+      height: 1.2rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* Target Limit & Repeat Controls */
+    .settings-panel {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 1.5rem;
+    }
+
+    .setting-box {
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(8px);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #611819;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .setting-box input {
+      width: 65px;
+      padding: 0.3rem 0.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 10px;
+      background: #ffffff;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #333;
+      outline: none;
+    }
+
+    /* Controls with Light White Theme */
+    .controls {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .btn {
+      background: #ffffff;
+      border: none;
+      color: #e65100;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      font-size: 2rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn:hover {
+      background: #fff8f6;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .btn:active {
+      transform: translateY(1px) scale(0.95);
+    }
+
+    .btn-reset {
+      width: auto;
+      height: 50px;
+      padding: 0 1.2rem;
+      border-radius: 25px;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #d32f2f;
+    }
+
+    .btn-mic {
+      width: auto;
+      height: 50px;
+      padding: 0 1.2rem;
+      border-radius: 25px;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #2e7d32;
+    }
+
+    .btn-mic.active {
+      background: #e8f5e9;
+      color: #1b5e20;
+      box-shadow: 0 0 12px rgba(46, 125, 50, 0.4);
+    }
+
+    /* Right Side Stats Panel */
+    .stats-panel {
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(10px);
+      padding: 1.8rem;
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      min-width: 180px;
+      text-align: center;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #7a2021;
+    }
+
+    .stat-value {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #880e4f;
+    }
+
+    @media (max-width: 768px) {
+      .app-container {
+        flex-direction: column;
+        gap: 2rem;
+      }
+      .stats-panel {
+        flex-direction: row;
+        justify-content: space-around;
+        width: 100%;
+        max-width: 400px;
+      }
+      .top-left-brand {
+        top: 15px;
+        left: 15px;
+        font-size: 0.95rem;
+      }
+      .top-right-logo {
+        top: 12px;
+        right: 15px;
+        width: 45px;
+        height: 45px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-left-brand">KALYAN JAP</div>
+
+  <!-- Top Right Golden Om Icon -->
+  <div class="top-right-logo">
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#FFE082" />
+          <stop offset="50%" stop-color="#FFB300" />
+          <stop offset="100%" stop-color="#E65100" />
+        </linearGradient>
+      </defs>
+      <path d="M46.8 35.2C42.1 35.2 36.5 38.3 36.5 45.4C36.5 51.5 43.1 51.5 46.8 51.5C51.5 51.5 55.2 54.6 55.2 61.7C55.2 69.8 46.8 72.9 40.2 69.8M55.2 51.5C60.8 51.5 63.6 57.7 63.6 63.8C63.6 71.1 57.1 75.2 50.6 75.2C42.1 75.2 33.7 67.9 33.7 58.7C33.7 47.4 43.1 43.3 48.7 43.3C54.3 43.3 59.9 40.2 59.9 40.2M48.7 25.8C53.4 25.8 59 31 59 31M57.1 17.5A2.1 2.1 0 1 1 57.1 17.6" 
+            stroke="url(#goldGradient)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <header>
+    <h1>Jap Counter</h1>
+  </header>
+
+  <div class="app-container">
+    <main class="counter-stage" id="stage">
+      <div id="count-display">0</div>
+      <div class="voice-status" id="voice-status">Voice mode off</div>
+
+      <div class="settings-panel" onclick="event.stopPropagation()">
+        <div class="setting-box">
+          <label for="limit-input">Target Limit:</label>
+          <input type="number" id="limit-input" placeholder="Off" min="1">
+        </div>
+        <div class="setting-box">
+          <label for="target-rounds">Target Rounds:</label>
+          <input type="number" id="target-rounds" placeholder="Off" min="1">
+        </div>
+      </div>
+      
+      <div class="controls" onclick="event.stopPropagation()">
+        <button class="btn" id="btn-minus" title="Decrease (-)">-</button>
+        <button class="btn btn-mic" id="btn-mic" title="Toggle Voice Count">🎙️ Voice</button>
+        <button class="btn btn-reset" id="btn-reset" title="Reset (R)">Reset</button>
+        <button class="btn" id="btn-plus" title="Increase (+)">+</button>
+      </div>
+    </main>
+
+    <aside class="stats-panel" onclick="event.stopPropagation()">
+      <div class="stat-item">
+        <span class="stat-label">Rounds (Mala)</span>
+        <span class="stat-value" id="rounds-count">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Grand Total</span>
+        <span class="stat-value" id="grand-total">0</span>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    let count = parseInt(localStorage.getItem('japCountVal')) || 0;
+    let limit = parseInt(localStorage.getItem('japCountLimit')) || 0;
+    let rounds = parseInt(localStorage.getItem('japRoundsCount')) || 0;
+    let targetRounds = parseInt(localStorage.getItem('japTargetRounds')) || 0;
+
+    const display = document.getElementById('count-display');
+    const roundsDisplay = document.getElementById('rounds-count');
+    const grandTotalDisplay = document.getElementById('grand-total');
+    const voiceStatus = document.getElementById('voice-status');
+    
+    const btnPlus = document.getElementById('btn-plus');
+    const btnMinus = document.getElementById('btn-minus');
+    const btnReset = document.getElementById('btn-reset');
+    const btnMic = document.getElementById('btn-mic');
+    const stage = document.getElementById('stage');
+    
+    const limitInput = document.getElementById('limit-input');
+    const targetRoundsInput = document.getElementById('target-rounds');
+
+    if (limit > 0) limitInput.value = limit;
+    if (targetRounds > 0) targetRoundsInput.value = targetRounds;
+
+    function updateCounter(newValue) {
+      if (newValue < 0) newValue = 0;
+      count = newValue;
+
+      if (limit > 0 && count >= limit) {
+        count = 0;
+        rounds += 1;
+      }
+
+      display.textContent = count;
+      roundsDisplay.textContent = targetRounds > 0 ? `${rounds}/${targetRounds}` : rounds;
+      
+      const totalJaps = limit > 0 ? (rounds * limit) + count : count;
+      grandTotalDisplay.textContent = totalJaps;
+
+      localStorage.setItem('japCountVal', count);
+      localStorage.setItem('japRoundsCount', rounds);
+
+      display.classList.add('pulse');
+      setTimeout(() => display.classList.remove('pulse'), 50);
+    }
+
+    limitInput.addEventListener('input', (e) => {
+      limit = parseInt(e.target.value) || 0;
+      localStorage.setItem('japCountLimit', limit);
+      updateCounter(count);
+    });
+
+    targetRoundsInput.addEventListener('input', (e) => {
+      targetRounds = parseInt(e.target.value) || 0;
+      localStorage.setItem('japTargetRounds', targetRounds);
+      updateCounter(count);
+    });
+
+    btnPlus.addEventListener('click', () => updateCounter(count + 1));
+    btnMinus.addEventListener('click', () => {
+      if (count > 0) {
+        updateCounter(count - 1);
+      } else if (rounds > 0 && limit > 0) {
+        rounds -= 1;
+        updateCounter(limit - 1);
+      }
+    });
+
+    btnReset.addEventListener('click', () => {
+      rounds = 0;
+      updateCounter(0);
+    });
+
+    stage.addEventListener('click', () => updateCounter(count + 1));
+
+    document.addEventListener('keydown', (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+      if (e.key === '+' || e.key === '=') {
+        updateCounter(count + 1);
+      } else if (e.key === '-' || e.key === '_') {
+        if (count > 0) {
+          updateCounter(count - 1);
+        } else if (rounds > 0 && limit > 0) {
+          rounds -= 1;
+          updateCounter(limit - 1);
+        }
+      } else if (e.code === 'Space') {
+        e.preventDefault();
+        updateCounter(count + 1);
+      } else if (e.key.toLowerCase() === 'r') {
+        rounds = 0;
+        updateCounter(0);
+      }
+    });
+
+    /* Voice Recognition Setup for Mantra */
+    let isListening = false;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'hi-IN'; // Hindi/Sanskrit phonetic tuning
+
+      recognition.onresult = (event) => {
+        const lastIndex = event.results.length - 1;
+        const transcript = event.results[lastIndex][0].transcript.toLowerCase().trim();
+
+        // Triggers for "Om Shri Janardhanay Namaha" variations (English & Hindi script)
+        const matched = transcript.includes('janardhana') || 
+                        transcript.includes('janardhanay') || 
+                        transcript.includes('जनार्दनाय') || 
+                        transcript.includes('जनार्दन');
+
+        if (matched) {
+          if (event.results[lastIndex].isFinal) {
+            updateCounter(count + 1);
+          }
+        }
+      };
+
+      recognition.onend = () => {
+        if (isListening) {
+          recognition.start(); // Keep listening automatically
+        } else {
+          btnMic.classList.remove('active');
+          voiceStatus.textContent = "Voice mode off";
+        }
+      };
+
+      recognition.onerror = (e) => {
+        if (e.error === 'not-allowed') {
+          voiceStatus.textContent = "Mic Permission Denied";
+          isListening = false;
+          btnMic.classList.remove('active');
+        }
+      };
+
+      btnMic.addEventListener('click', () => {
+        isListening = !isListening;
+        if (isListening) {
+          try {
+            recognition.start();
+            btnMic.classList.add('active');
+            voiceStatus.textContent = "Listening for Mantra...";
+          } catch (err) {
+            isListening = false;
+          }
+        } else {
+          recognition.stop();
+          btnMic.classList.remove('active');
+          voiceStatus.textContent = "Voice mode off";
+        }
+      });
+    } else {
+      btnMic.style.display = 'none';
+      voiceStatus.textContent = "Voice control not supported in this browser";
+    }
+
+    updateCounter(count);
+  </script>
+
+</body>
+</html>
